@@ -25,10 +25,10 @@ const (
 type TaskRepositoryContract interface {
 	GetAll() ([]Task, error)
 	Find(id string) (Task, error)
-	Create(task Task) (Task, error)
-	Update(id string, task Task) (Task, error)
-	Delete(id string, task Task) (Task, error)
-	UpdateStatus(id string, newStatus string) (Task, error)
+	Create(task Task) error
+	Update(id string, task Task) error
+	Delete(id string, task Task) error
+	UpdateStatus(id string, newStatus string) error
 }
 
 type TaskRepository struct{}
