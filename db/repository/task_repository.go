@@ -26,8 +26,8 @@ type TaskRepositoryContract interface {
 	GetAll() ([]Task, error)
 	Find(id string) (Task, error)
 	Create(task Task) error
-	Update(id string, task Task) error
-	Delete(id string, task Task) error
+	Update(task Task) error
+	Delete(task Task) error
 	UpdateStatus(id string, newStatus string) error
 }
 
@@ -43,22 +43,59 @@ func (TaskRepository) GetAll() ([]Task, error) {
 	return query, nil
 }
 
-func (TaskRepository) Find(id string) (*Task, error) {
-	panic("implement me")
+func (TaskRepository) Find(id string) (Task, error) {
+	task, err := TaskDb{}.Find(id)
+
+	if err != nil {
+		return Task{}, fmt.Errorf("cannot querying data: %v", err)
+	}
+
+	return task, nil
 }
 
-func (TaskRepository) Create(task Task) (*Task, error) {
-	panic("implement me")
+func (TaskRepository) Create(task Task) (Task, error) {
+	if err := (TaskDb{}).Create(task); err != nil {
+		return Task{}, fmt.Errorf("cannot create task: %v", err)
+	}
+
+	item, err := TaskDb{}.Find(task.Id)
+	if err != nil {
+		return Task{}, fmt.Errorf("cannot fetch created task: %v", err)
+	}
+
+	return item, nil
 }
 
-func (TaskRepository) Update(id string, task Task) (*Task, error) {
-	panic("implement me")
+func (TaskRepository) Update(task Task) (Task, error) {
+	if err := (TaskDb{}).Update(task); err != nil {
+		return Task{}, fmt.Errorf("cannot update task: %v", err)
+	}
+
+	item, err := TaskDb{}.Find(task.Id)
+	if err != nil {
+		return Task{}, fmt.Errorf("cannot fetch updated task: %v", err)
+	}
+
+	return item, nil
 }
 
-func (TaskRepository) Delete(id string, task Task) (*Task, error) {
-	panic("implement me")
+func (TaskRepository) Delete(id string, task Task) (Task, error) {
+	if err := (TaskDb{}).Delete(task); err != nil {
+		return Task{}, fmt.Errorf("cannot delete task: %v", err)
+	}
+
+	return task, nil
 }
 
-func (TaskRepository) UpdateStatus(id string, newStatus string) (*Task, error) {
-	panic("implement me")
+func (TaskRepository) UpdateStatus(id string, newStatus string) (Task, error) {
+	if err := (TaskDb{}).UpdateStatus(id, newStatus); err != nil {
+		return Task{}, fmt.Errorf("cannot update task status: %v", err)
+	}
+
+	item, err := TaskDb{}.Find(id)
+	if err != nil {
+		return Task{}, fmt.Errorf("cannot fetch updated task status: %v", err)
+	}
+
+	return item, nil
 }
