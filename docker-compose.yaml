@@ -1,0 +1,16 @@
+version: '3.7'
+services:
+  db:
+    image: postgres:latest
+    volumes:
+      - ./ops/db-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=web
+      - POSTGRES_PASSWORD=secret-password
+      - POSTGRES_DB=ws_task_app
+    ports:
+      - "45432:5432"
+  redis:
+    image: redis:latest
+    ports:
+      - "46379:6379"
