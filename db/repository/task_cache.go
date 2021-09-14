@@ -12,7 +12,7 @@ var redisClient = cache.NewClient()
 
 type TaskCache struct{}
 
-func (t TaskCache) GetAll() ([]Task, error) {
+func (t TaskCache) List() ([]Task, error) {
 	result, err := redisClient.Get(context.Background(), "tasks").Result()
 
 	if err == redis.Nil {
@@ -42,4 +42,14 @@ func (t TaskCache) Find(id string) (Task, error) {
 	}
 
 	return task, nil
+}
+
+func (t TaskCache) Set(task Task) error {
+	_, err := redisClient.Set(context.Background(), "task:"+task.Id, task, 300).Result()
+
+	if err != nil {
+		return fmt.Errorf("cannot set task cache: %v", err)
+	}
+
+	return nil
 }
