@@ -2,6 +2,7 @@ package repository
 
 import (
 	"fmt"
+	"github.com/google/uuid"
 	"web-svc/db/sql"
 
 	_ "github.com/lib/pq"
@@ -32,6 +33,10 @@ func (t TaskDb) Find(id string) (Task, error) {
 }
 
 func (t TaskDb) Create(task Task) error {
+	if task.Id == "" {
+		task.Id = uuid.NewString()
+	}
+
 	query, err := client.Prepare(client.Rebind("insert into tasks (id, name, description, due_date, status) values (?, ?, ?, ?, ?)"))
 
 	if err != nil {
@@ -63,14 +68,14 @@ func (t TaskDb) Update(task Task) error {
 	return nil
 }
 
-func (t TaskDb) Delete(task Task) error {
+func (t TaskDb) Delete(id string) error {
 	query, err := client.Prepare("delete from tasks where id = $1")
 
 	if err != nil {
 		return fmt.Errorf("cannot prepare statement: %v", err)
 	}
 
-	exec, err := query.Exec(task.Id)
+	exec, err := query.Exec(id)
 
 	if affectedRow, err := exec.RowsAffected(); affectedRow == 0 && err != nil {
 		return fmt.Errorf("cannot delete item: %v", err)

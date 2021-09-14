@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package task;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+
+option go_package = "grpc/task/server";
+
+message Task {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  string status = 4;
+  google.protobuf.Timestamp created_at = 5;
+  google.protobuf.Timestamp due_date = 6;
+}
+
+message TaskRequest {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  string status = 4;
+  google.protobuf.Timestamp due_date = 5;
+}
+
+message TaskStatusRequest {
+  string id = 1;
+  string status = 2;
+}
+
+message TaskIdRequest {
+  string id = 1;
+}
+
+message TaskList {
+  repeated Task list = 1;
+}
+
+service TaskManager {
+  rpc Create(TaskRequest) returns (Task) {}
+  rpc GetAll(google.protobuf.Empty) returns (TaskList) {}
+  rpc Update(TaskRequest) returns (Task) {}
+  rpc UpdateStatus(TaskStatusRequest) returns (Task) {}
+  rpc Delete(TaskIdRequest) returns (google.protobuf.Empty) {}
+}

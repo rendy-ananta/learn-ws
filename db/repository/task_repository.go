@@ -79,12 +79,12 @@ func (TaskRepository) Update(task Task) (Task, error) {
 	return item, nil
 }
 
-func (TaskRepository) Delete(id string, task Task) (Task, error) {
-	if err := (TaskDb{}).Delete(task); err != nil {
-		return Task{}, fmt.Errorf("cannot delete task: %v", err)
+func (t TaskRepository) Delete(id string) error {
+	if err := (TaskDb{}).Delete(id); err != nil {
+		return fmt.Errorf("cannot delete task: %v", err)
 	}
 
-	return task, nil
+	return nil
 }
 
 func (TaskRepository) UpdateStatus(id string, newStatus string) (Task, error) {
