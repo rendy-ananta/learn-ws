@@ -2,8 +2,10 @@ package repository
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"github.com/google/uuid"
+	"log"
 	"time"
 )
 
@@ -14,6 +16,11 @@ type Task struct {
 	Status      string         `db:"status"`
 	CreatedAt   time.Time      `db:"created_at"`
 	DueDate     sql.NullTime   `db:"due_date"`
+}
+
+func (task Task) MarshalBinary() (data []byte, err error) {
+	bytes, err := json.Marshal(task)
+	return bytes, err
 }
 
 const (
@@ -45,10 +52,31 @@ func (TaskRepository) GetAll() ([]Task, error) {
 }
 
 func (TaskRepository) Find(id string) (Task, error) {
-	task, err := TaskDb{}.Find(id)
+	var task Task
 
-	if err != nil {
-		return Task{}, fmt.Errorf("cannot querying data: %v", err)
+	cachedContent, err := TaskCache{}.Find(id)
+
+	if cachedContent == (Task{}) && err != nil {
+		log.Printf("cache not found, querying data...")
+
+		queryResult, err := TaskDb{}.Find(id)
+
+		if err != nil {
+			return Task{}, fmt.Errorf("cannot querying data: %v", err)
+		}
+
+		task = queryResult
+
+		// set the cache
+		go func() {
+			err := TaskCache{}.Set(task)
+			if err != nil {
+				log.Fatalf("error set cache: %v", err)
+			}
+		}()
+	} else {
+		log.Printf("using data from cache")
+		task = cachedContent
 	}
 
 	return task, nil
@@ -72,6 +100,14 @@ func (TaskRepository) Create(task Task) (Task, error) {
 		return Task{}, fmt.Errorf("cannot fetch created task: %v", err)
 	}
 
+	// set the cache
+	go func() {
+		err := TaskCache{}.Set(task)
+		if err != nil {
+			log.Fatalf("error set cache: %v", err)
+		}
+	}()
+
 	return item, nil
 }
 
@@ -84,6 +120,14 @@ func (TaskRepository) Update(task Task) (Task, error) {
 	if err != nil {
 		return Task{}, fmt.Errorf("cannot fetch updated task: %v", err)
 	}
+
+	// set the cache
+	go func() {
+		err := TaskCache{}.Set(task)
+		if err != nil {
+			log.Fatalf("error set cache: %v", err)
+		}
+	}()
 
 	return item, nil
 }
@@ -101,10 +145,18 @@ func (TaskRepository) UpdateStatus(id string, newStatus string) (Task, error) {
 		return Task{}, fmt.Errorf("cannot update task status: %v", err)
 	}
 
-	item, err := TaskDb{}.Find(id)
+	task, err := TaskDb{}.Find(id)
 	if err != nil {
 		return Task{}, fmt.Errorf("cannot fetch updated task status: %v", err)
 	}
 
-	return item, nil
+	// set the cache
+	go func() {
+		err := TaskCache{}.Set(task)
+		if err != nil {
+			log.Fatalf("error set cache: %v", err)
+		}
+	}()
+
+	return task, nil
 }

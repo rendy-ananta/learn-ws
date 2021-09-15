@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/go-redis/redis/v8"
+	"log"
+	"time"
 	"web-svc/db/cache"
 )
 
@@ -29,7 +31,9 @@ func (t TaskCache) List() ([]Task, error) {
 }
 
 func (t TaskCache) Find(id string) (Task, error) {
-	result, err := redisClient.Get(context.Background(), "task:"+id).Result()
+	log.Printf("finding key: %s", fmt.Sprintf("task:%s", id))
+
+	result, err := redisClient.Get(context.Background(), fmt.Sprintf("task:%s", id)).Result()
 
 	if err == redis.Nil {
 		return Task{}, fmt.Errorf("cache not found")
@@ -45,7 +49,7 @@ func (t TaskCache) Find(id string) (Task, error) {
 }
 
 func (t TaskCache) Set(task Task) error {
-	_, err := redisClient.Set(context.Background(), "task:"+task.Id, task, 300).Result()
+	err := redisClient.Set(context.Background(), "task:"+task.Id, task, 5*time.Minute).Err()
 
 	if err != nil {
 		return fmt.Errorf("cannot set task cache: %v", err)
