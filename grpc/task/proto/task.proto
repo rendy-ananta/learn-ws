@@ -16,7 +16,14 @@ message Task {
   google.protobuf.Timestamp due_date = 6;
 }
 
-message TaskRequest {
+message CreateTaskRequest {
+  string name = 2;
+  string description = 3;
+  string status = 4;
+  google.protobuf.Timestamp due_date = 5;
+}
+
+message UpdateTaskRequest {
   string id = 1;
   string name = 2;
   string description = 3;
@@ -38,9 +45,10 @@ message TaskList {
 }
 
 service TaskManager {
-  rpc Create(TaskRequest) returns (Task) {}
+  rpc Create(CreateTaskRequest) returns (Task) {}
   rpc GetAll(google.protobuf.Empty) returns (TaskList) {}
-  rpc Update(TaskRequest) returns (Task) {}
+  rpc Find(TaskIdRequest) returns (Task) {}
+  rpc Update(UpdateTaskRequest) returns (Task) {}
   rpc UpdateStatus(TaskStatusRequest) returns (Task) {}
   rpc Delete(TaskIdRequest) returns (google.protobuf.Empty) {}
 }

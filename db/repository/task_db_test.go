@@ -116,7 +116,7 @@ func TestTaskDb_Delete(t *testing.T) {
 
 	task.Status = StatusDone
 
-	if err := db.Delete(task); err != nil {
+	if err := db.Delete(task.Id); err != nil {
 		t.Errorf("cannot delete task: %v", err)
 	}
 

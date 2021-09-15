@@ -3,6 +3,7 @@ package repository
 import (
 	"database/sql"
 	"fmt"
+	"github.com/google/uuid"
 	"time"
 )
 
@@ -54,6 +55,14 @@ func (TaskRepository) Find(id string) (Task, error) {
 }
 
 func (TaskRepository) Create(task Task) (Task, error) {
+	if task.Id == "" {
+		task.Id = uuid.NewString()
+	}
+
+	if task.Status == "" { // default value
+		task.Status = StatusNotStarted
+	}
+
 	if err := (TaskDb{}).Create(task); err != nil {
 		return Task{}, fmt.Errorf("cannot create task: %v", err)
 	}

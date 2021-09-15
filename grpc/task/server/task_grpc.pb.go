@@ -19,9 +19,10 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type TaskManagerClient interface {
-	Create(ctx context.Context, in *TaskRequest, opts ...grpc.CallOption) (*Task, error)
+	Create(ctx context.Context, in *CreateTaskRequest, opts ...grpc.CallOption) (*Task, error)
 	GetAll(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*TaskList, error)
-	Update(ctx context.Context, in *TaskRequest, opts ...grpc.CallOption) (*Task, error)
+	Find(ctx context.Context, in *TaskIdRequest, opts ...grpc.CallOption) (*Task, error)
+	Update(ctx context.Context, in *UpdateTaskRequest, opts ...grpc.CallOption) (*Task, error)
 	UpdateStatus(ctx context.Context, in *TaskStatusRequest, opts ...grpc.CallOption) (*Task, error)
 	Delete(ctx context.Context, in *TaskIdRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
@@ -34,7 +35,7 @@ func NewTaskManagerClient(cc grpc.ClientConnInterface) TaskManagerClient {
 	return &taskManagerClient{cc}
 }
 
-func (c *taskManagerClient) Create(ctx context.Context, in *TaskRequest, opts ...grpc.CallOption) (*Task, error) {
+func (c *taskManagerClient) Create(ctx context.Context, in *CreateTaskRequest, opts ...grpc.CallOption) (*Task, error) {
 	out := new(Task)
 	err := c.cc.Invoke(ctx, "/task.TaskManager/Create", in, out, opts...)
 	if err != nil {
@@ -52,7 +53,16 @@ func (c *taskManagerClient) GetAll(ctx context.Context, in *emptypb.Empty, opts 
 	return out, nil
 }
 
-func (c *taskManagerClient) Update(ctx context.Context, in *TaskRequest, opts ...grpc.CallOption) (*Task, error) {
+func (c *taskManagerClient) Find(ctx context.Context, in *TaskIdRequest, opts ...grpc.CallOption) (*Task, error) {
+	out := new(Task)
+	err := c.cc.Invoke(ctx, "/task.TaskManager/Find", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *taskManagerClient) Update(ctx context.Context, in *UpdateTaskRequest, opts ...grpc.CallOption) (*Task, error) {
 	out := new(Task)
 	err := c.cc.Invoke(ctx, "/task.TaskManager/Update", in, out, opts...)
 	if err != nil {
@@ -83,9 +93,10 @@ func (c *taskManagerClient) Delete(ctx context.Context, in *TaskIdRequest, opts 
 // All implementations must embed UnimplementedTaskManagerServer
 // for forward compatibility
 type TaskManagerServer interface {
-	Create(context.Context, *TaskRequest) (*Task, error)
+	Create(context.Context, *CreateTaskRequest) (*Task, error)
 	GetAll(context.Context, *emptypb.Empty) (*TaskList, error)
-	Update(context.Context, *TaskRequest) (*Task, error)
+	Find(context.Context, *TaskIdRequest) (*Task, error)
+	Update(context.Context, *UpdateTaskRequest) (*Task, error)
 	UpdateStatus(context.Context, *TaskStatusRequest) (*Task, error)
 	Delete(context.Context, *TaskIdRequest) (*emptypb.Empty, error)
 	mustEmbedUnimplementedTaskManagerServer()
@@ -95,13 +106,16 @@ type TaskManagerServer interface {
 type UnimplementedTaskManagerServer struct {
 }
 
-func (UnimplementedTaskManagerServer) Create(context.Context, *TaskRequest) (*Task, error) {
+func (UnimplementedTaskManagerServer) Create(context.Context, *CreateTaskRequest) (*Task, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Create not implemented")
 }
 func (UnimplementedTaskManagerServer) GetAll(context.Context, *emptypb.Empty) (*TaskList, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAll not implemented")
 }
-func (UnimplementedTaskManagerServer) Update(context.Context, *TaskRequest) (*Task, error) {
+func (UnimplementedTaskManagerServer) Find(context.Context, *TaskIdRequest) (*Task, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Find not implemented")
+}
+func (UnimplementedTaskManagerServer) Update(context.Context, *UpdateTaskRequest) (*Task, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Update not implemented")
 }
 func (UnimplementedTaskManagerServer) UpdateStatus(context.Context, *TaskStatusRequest) (*Task, error) {
@@ -124,7 +138,7 @@ func RegisterTaskManagerServer(s grpc.ServiceRegistrar, srv TaskManagerServer) {
 }
 
 func _TaskManager_Create_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(TaskRequest)
+	in := new(CreateTaskRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -136,7 +150,7 @@ func _TaskManager_Create_Handler(srv interface{}, ctx context.Context, dec func(
 		FullMethod: "/task.TaskManager/Create",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TaskManagerServer).Create(ctx, req.(*TaskRequest))
+		return srv.(TaskManagerServer).Create(ctx, req.(*CreateTaskRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -159,8 +173,26 @@ func _TaskManager_GetAll_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _TaskManager_Find_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TaskIdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TaskManagerServer).Find(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/task.TaskManager/Find",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TaskManagerServer).Find(ctx, req.(*TaskIdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _TaskManager_Update_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(TaskRequest)
+	in := new(UpdateTaskRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -172,7 +204,7 @@ func _TaskManager_Update_Handler(srv interface{}, ctx context.Context, dec func(
 		FullMethod: "/task.TaskManager/Update",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TaskManagerServer).Update(ctx, req.(*TaskRequest))
+		return srv.(TaskManagerServer).Update(ctx, req.(*UpdateTaskRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -227,6 +259,10 @@ var TaskManager_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetAll",
 			Handler:    _TaskManager_GetAll_Handler,
+		},
+		{
+			MethodName: "Find",
+			Handler:    _TaskManager_Find_Handler,
 		},
 		{
 			MethodName: "Update",

@@ -17,9 +17,8 @@ type TaskManagerServerImpl struct {
 	UnimplementedTaskManagerServer
 }
 
-func (t TaskManagerServerImpl) Create(ctx context.Context, request *TaskRequest) (*Task, error) {
+func (t TaskManagerServerImpl) Create(ctx context.Context, request *CreateTaskRequest) (*Task, error) {
 	response, err := taskRepository.Create(repository.Task{
-		Id:   "", // will be created automatically from repository
 		Name: request.Name,
 		Description: sql.NullString{
 			Valid:  request.Description != "",
@@ -35,6 +34,16 @@ func (t TaskManagerServerImpl) Create(ctx context.Context, request *TaskRequest)
 
 	if err != nil {
 		return nil, fmt.Errorf("error invoking `Create()` in task repository: %v", err)
+	}
+
+	return mapFromTaskRepository(response), nil
+}
+
+func (t TaskManagerServerImpl) Find(ctx context.Context, request *TaskIdRequest) (*Task, error) {
+	response, err := taskRepository.Find(request.Id)
+
+	if err != nil {
+		return nil, fmt.Errorf("error invoking `Find()` in task repository: %v", err)
 	}
 
 	return mapFromTaskRepository(response), nil
@@ -56,7 +65,7 @@ func (t TaskManagerServerImpl) GetAll(ctx context.Context, empty *emptypb.Empty)
 	return list, nil
 }
 
-func (t TaskManagerServerImpl) Update(ctx context.Context, request *TaskRequest) (*Task, error) {
+func (t TaskManagerServerImpl) Update(ctx context.Context, request *UpdateTaskRequest) (*Task, error) {
 	response, err := taskRepository.Update(repository.Task{
 		Id:   request.Id,
 		Name: request.Name,

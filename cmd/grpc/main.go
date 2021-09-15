@@ -18,9 +18,9 @@ func main() {
 
 	taskServer.RegisterTaskManagerServer(grpcServer, taskServer.TaskManagerServerImpl{})
 
+	fmt.Println("starting grpc server on :8080")
+
 	if err := grpcServer.Serve(lis); err != nil {
 		log.Fatalf("cannot serve task grpc server: %v", err)
 	}
-
-	fmt.Println("grpc server started in :8080")
 }
