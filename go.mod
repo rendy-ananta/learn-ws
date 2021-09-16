@@ -15,6 +15,8 @@ require (
 require (
 	github.com/cespare/xxhash/v2 v2.1.1 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
+	github.com/graphql-go/graphql v0.8.0 // indirect
+	github.com/graphql-go/handler v0.2.3 // indirect
 	golang.org/x/net v0.0.0-20210428140749-89ef3d95e781 // indirect
 	golang.org/x/sys v0.0.0-20210510120138-977fb7262007 // indirect
 	golang.org/x/text v0.3.6 // indirect
