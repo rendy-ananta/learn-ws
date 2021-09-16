@@ -4,8 +4,8 @@ The app is a Task Manager, you can create, read, update, and delete your task th
 
 ## Application Flow
 - Request from user are targeting into our GraphQL server.
-- From GraphQL, user request are processed before calling the actual request using gRPC.
-- GraphQL resolver will execute gRPC server and send the request to gRPC server.
+- From GraphQL, user request are processed before calling the actual request into our gRPC server.
+- GraphQL resolver will execute gRPC client and send the request to gRPC server.
 - gRPC server will handle the request and forward into a real service intended to run the task requested.
 - The task can be fetching data or writing data into our Redis and PostgreSQL.
 - In the middle layer, we use Repository to determine where we should get the data,  is it from our cache or our database.
