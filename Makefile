@@ -1,5 +1,6 @@
-graphql-server:
-	go run cmd/graphql/main.go
+build:
+	go build -o bin/grpc web-svc/cmd/grpc
+	go build -o bin/graphql web-svc/cmd/graphql
 
-grpc-server:
-	go run cmd/grpc/main.go
+test:
+	go test web-svc/db/repository
